@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFC93C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ملاحظاتي">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>ملاحظاتي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday, calm and very readable for an older reader
+   IDEA a yellow legal pad: black binding strip on top, ruled lines, red margin on the right
+   PICTURE the pad itself: the notes list is the ruled paper
+   COLOUR pad yellow #FFC93C band, paper #FFF8DC, rule blue, margin red, ink near-black
+   TYPE IBM Plex Sans Arabic 700 + 400, large sizes (19px body)
+   LAYOUT one column: yellow header with title + search, ruled list, big round add button */
+:root{color-scheme:light dark;--paper:light-dark(#FFF8DC,#1C1B17);--ink:light-dark(#1C1A14,#F3EEDF);--muted:light-dark(#6B6553,#A9A391);--rule:light-dark(#BFD3EA,#323846);--margin:light-dark(#E58B8B,#7A3B3B);--band:#FFC93C;--bandink:#1C1A14;--fab:light-dark(#1C1A14,#FFC93C);--fabink:light-dark(#FFC93C,#1C1A14);--mark:light-dark(#FFDD6E,#6E5714);--sheet:light-dark(#FFFFFF,#26251F);--danger:light-dark(#B3261E,#FF8A80)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.6 "IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #1C6FD1;outline-offset:2px}
+.top{position:sticky;top:0;z-index:5;background:var(--band);color:var(--bandink);padding:calc(env(safe-area-inset-top,0px) + 14px) max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px));border-bottom:10px solid #1C1A14}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:760px;margin:0 auto}
+h1{margin:0;font-size:34px;line-height:1.1;font-weight:700;letter-spacing:-.01em}
+.count{font-size:16px;opacity:.75;margin-top:2px}
+.icon{width:48px;height:48px;border-radius:14px;border:0;background:rgba(0,0,0,.08);display:grid;place-items:center;color:var(--bandink)}
+.icon:active{background:rgba(0,0,0,.16)}
+.search{position:relative;max-width:760px;margin:14px auto 0}
+.search input{width:100%;height:56px;border-radius:16px;border:2px solid #1C1A14;background:#FFFDF4;color:#1C1A14;padding:0 52px 0 52px;font-size:19px}
+.search input::placeholder{color:#7A7463}
+.search input::-webkit-search-cancel-button{display:none}
+.search .lens{position:absolute;inset-inline-start:16px;top:50%;transform:translateY(-50%);pointer-events:none;color:#1C1A14}
+.search .clear{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:#1C1A14;display:none}
+.search.has .clear{display:grid;place-items:center}
+.pad{position:relative;max-width:760px;margin:0 auto;min-height:calc(100% - 160px);padding-bottom:140px}
+.pad::before{content:"";position:absolute;top:0;bottom:0;inset-inline-start:40px;width:2px;background:var(--margin)}
+.info{padding:12px 16px 12px 16px;padding-inline-start:56px;font-size:16px;color:var(--muted);border-bottom:1px solid var(--rule)}
+.note{display:block;width:100%;text-align:start;border:0;background:transparent;border-bottom:1.5px solid var(--rule);padding:16px 16px 14px;padding-inline-start:56px;position:relative}
+.note:active{background:color-mix(in srgb,var(--band) 22%,transparent)}
+.nt{display:block;font-weight:700;font-size:21px;line-height:1.35;overflow-wrap:anywhere}
+.nt.empty{color:var(--muted);font-weight:600}
+.nb{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--muted);font-size:17px;margin-top:4px;overflow-wrap:anywhere}
+.nd{display:block;font-size:14px;color:var(--muted);margin-top:6px;opacity:.85}
+mark{background:var(--mark);color:inherit;border-radius:4px;padding:0 2px}
+.empty-state{padding:56px 24px;padding-inline-start:64px;text-align:start}
+.empty-state b{display:block;font-size:24px;margin-bottom:6px}
+.empty-state p{margin:0;color:var(--muted)}
+.fab{position:fixed;inset-inline-end:max(20px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 22px);height:68px;padding:0 26px 0 22px;border-radius:34px;border:0;background:var(--fab);color:var(--fabink);font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:0 6px 0 rgba(0,0,0,.18);z-index:6}
+.fab:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.ed{position:fixed;inset:0;z-index:10;background:var(--paper);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .25s ease;visibility:hidden}
+.ed.open{transform:none;visibility:visible}
+.edtop{background:var(--band);color:var(--bandink);border-bottom:10px solid #1C1A14;padding:calc(env(safe-area-inset-top,0px) + 10px) max(12px,env(safe-area-inset-right,0px)) 10px max(12px,env(safe-area-inset-left,0px))}
+.back{height:48px;border:0;border-radius:14px;background:rgba(0,0,0,.08);padding:0 14px 0 16px;display:flex;align-items:center;gap:6px;font-weight:700;color:var(--bandink)}
+.saved{font-size:15px;opacity:.75}
+.del{color:#8E1B14}
+.edbody{flex:1;overflow:auto;position:relative;max-width:760px;width:100%;margin:0 auto}
+.edbody::before{content:"";position:absolute;top:0;bottom:0;inset-inline-start:40px;width:2px;background:var(--margin);pointer-events:none}
+#title{display:block;width:100%;border:0;background:transparent;font-size:26px;font-weight:700;padding:18px 16px 10px;padding-inline-start:56px;border-bottom:2px solid var(--rule);outline-offset:-3px}
+#body{display:block;width:100%;min-height:calc(100% - 80px);border:0;resize:none;background:transparent;font-size:19px;line-height:38px;padding:4px 16px 120px;padding-inline-start:56px;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 37px,var(--rule) 37px,var(--rule) 38px);background-attachment:local;background-position:0 4px;outline-offset:-3px}
+#title::placeholder,#body::placeholder{color:var(--muted)}
+#title:focus,#body:focus{outline:none}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 104px);transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#1C1A14;color:#FFF8DC;border-radius:16px;padding:10px 12px 10px 18px;display:flex;align-items:center;gap:14px;font-size:17px;z-index:30;transition:.2s;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{border:0;background:#FFC93C;color:#1C1A14;border-radius:12px;height:44px;padding:0 16px;font-weight:700;white-space:nowrap}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20;display:none;align-items:flex-end;justify-content:center}
+.scrim.open{display:flex}
+.sheet{background:var(--sheet);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 16px)}
+.sheet h2{margin:0 4px 6px;font-size:22px}
+.sheet p{margin:0 4px 14px;color:var(--muted);font-size:16px}
+.sheet button{display:block;width:100%;min-height:56px;border-radius:16px;border:2px solid var(--rule);background:transparent;font-weight:600;margin-top:10px;text-align:start;padding:0 18px}
+.sheet button.primary{background:var(--fab);color:var(--fabink);border-color:transparent}
+.sheet button.danger{background:var(--danger);color:#fff;border-color:transparent}
+.sheet button.ghost{text-align:center;border:0}
+@media (prefers-reduced-motion:reduce){.ed,.toast{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="row">
+    <div>
+      <h1>ملاحظاتي</h1>
+      <div class="count" id="count"></div>
+    </div>
+    <button class="icon" id="menuBtn" aria-label="المزيد">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>
+    </button>
+  </div>
+  <div class="search" id="searchWrap">
+    <svg class="lens" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+    <input type="search" id="q" placeholder="ابحث بالعنوان أو بأي كلمة…" autocomplete="off" enterkeyhint="search" aria-label="بحث">
+    <button class="clear" id="clearQ" aria-label="مسح البحث">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="pad" id="list"></main>
+
+<button class="fab" id="addBtn" aria-label="ملاحظة جديدة">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  ملاحظة جديدة
+</button>
+
+<section class="ed" id="ed" aria-hidden="true">
+  <div class="edtop">
+    <div class="row">
+      <button class="back" id="backBtn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        رجوع
+      </button>
+      <span class="saved" id="saved">محفوظة</span>
+      <button class="icon del" id="delBtn" aria-label="حذف الملاحظة">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="edbody">
+    <input id="title" placeholder="العنوان" autocomplete="off" enterkeyhint="next">
+    <textarea id="body" placeholder="اكتب ملاحظتك هنا…"></textarea>
+  </div>
+</section>
+
+<div class="scrim" id="menu">
+  <div class="sheet" role="dialog" aria-label="النسخ الاحتياطي">
+    <h2>النسخ الاحتياطي</h2>
+    <p>احفظ نسخة من كل الملاحظات في ملف، عشان لو تغيّر الجوال أو انمسح التطبيق ترجعها.</p>
+    <button class="primary" id="exportBtn">حفظ نسخة احتياطية</button>
+    <button id="importBtn">استرجاع من نسخة سابقة</button>
+    <button class="ghost" data-close>إغلاق</button>
+  </div>
+</div>
+
+<div class="scrim" id="confirmDel">
+  <div class="sheet" role="dialog" aria-label="تأكيد الحذف">
+    <h2>حذف هذي الملاحظة؟</h2>
+    <p>تقدر تتراجع خلال ثواني بعد الحذف.</p>
+    <button class="danger" id="yesDel">نعم، احذفها</button>
+    <button class="ghost" data-close>إلغاء</button>
+  </div>
+</div>
+
+<input type="file" id="file" accept=".json,application/json" hidden>
+<div class="toast" id="toast" role="status"><span id="toastMsg"></span><button id="toastBtn" hidden>تراجع</button></div>
+
+<script>
+{
+const KEY = 'abu-notes-v1';
+const $ = id => document.getElementById(id);
+let notes = [], cur = null, saveT = null, toastT = null, undo = null;
+
+function load(){ try { notes = JSON.parse(localStorage.getItem(KEY) || '[]'); if (!Array.isArray(notes)) notes = []; } catch(e){ notes = []; } }
+function persist(){
+  try { localStorage.setItem(KEY, JSON.stringify(notes)); $('saved').textContent = 'محفوظة'; }
+  catch(e){ $('saved').textContent = 'تعذّر الحفظ'; }
+}
+function saveSoon(){ $('saved').textContent = '…'; clearTimeout(saveT); saveT = setTimeout(persist, 300); }
+function flush(){ if (saveT){ clearTimeout(saveT); saveT = null; persist(); } }
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = n => n.toLocaleString('ar-SA');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+/* تطبيع عربي: يتجاهل التشكيل والتطويل ويوحّد الهمزات والتاء المربوطة والألف المقصورة */
+const MAP = {'أ':'ا','إ':'ا','آ':'ا','ٱ':'ا','ة':'ه','ى':'ي','ؤ':'و','ئ':'ي'};
+function nmap(s){
+  let n = '', ix = [];
+  for (let i = 0; i < s.length; i++){
+    let c = s[i];
+    if (/[ً-ٰٟـ]/.test(c)) continue;
+    c = MAP[c] || c.toLowerCase()[0];
+    n += c; ix.push(i);
+  }
+  return [n, ix];
+}
+const norm = s => nmap(s)[0];
+function terms(){ return norm($('q').value.trim()).split(/\s+/).filter(Boolean); }
+function ranges(s, ts){
+  const [n, ix] = nmap(s), out = [];
+  for (const t of ts){
+    let p = 0, i;
+    while ((i = n.indexOf(t, p)) !== -1){ out.push([ix[i], ix[i + t.length - 1] + 1]); p = i + t.length; }
+  }
+  out.sort((a, b) => a[0] - b[0]);
+  const m = [];
+  for (const r of out){ if (m.length && r[0] <= m[m.length - 1][1]) m[m.length - 1][1] = Math.max(m[m.length - 1][1], r[1]); else m.push(r.slice()); }
+  return m;
+}
+function marked(s, ts){
+  if (!ts.length) return esc(s);
+  let h = '', p = 0;
+  for (const [a, b] of ranges(s, ts)){ h += esc(s.slice(p, a)) + '<mark>' + esc(s.slice(a, b)) + '</mark>'; p = b; }
+  return h + esc(s.slice(p));
+}
+function preview(body, ts){
+  let s = body.replace(/\s+/g, ' ').trim();
+  if (ts.length){
+    const r = ranges(s, ts);
+    if (r.length && r[0][0] > 40){ let st = s.lastIndexOf(' ', r[0][0] - 25); s = '… ' + s.slice(st < 0 ? r[0][0] - 25 : st + 1); }
+  }
+  return marked(s.slice(0, 220), ts);
+}
+function when(t){
+  const d = new Date(t), now = new Date();
+  const day = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const time = d.toLocaleTimeString('ar-SA', {hour:'numeric', minute:'2-digit'});
+  if (t >= day) return 'اليوم ' + time;
+  if (t >= day - 864e5) return 'أمس ' + time;
+  return d.toLocaleDateString('ar-SA', {day:'numeric', month:'long', year:'numeric'});
+}
+
+function render(){
+  const ts = terms();
+  const sorted = notes.slice().sort((a, b) => b.created - a.created);
+  const list = ts.length ? sorted.filter(n => { const h = norm(n.title + ' ' + n.body); return ts.every(t => h.includes(t)); }) : sorted;
+  $('count').textContent = notes.length ? (notes.length === 1 ? 'ملاحظة وحدة' : num(notes.length) + ' ملاحظات') : 'ما فيه ملاحظات';
+  $('searchWrap').classList.toggle('has', !!$('q').value);
+  let h = '';
+  if (ts.length) h += `<div class="info">${list.length ? num(list.length) + ' نتيجة لـ «' + esc($('q').value.trim()) + '»' : 'ما لقينا شي بهالكلمة'}</div>`;
+  if (!notes.length) h += `<div class="empty-state"><b>دفترك فاضي</b><p>اضغط «ملاحظة جديدة» تحت، واكتب العنوان والملاحظة.</p></div>`;
+  h += list.map(n => `<button class="note" data-id="${esc(n.id)}">
+    <span class="nt${n.title.trim() ? '' : ' empty'}">${n.title.trim() ? marked(n.title, ts) : 'بدون عنوان'}</span>
+    ${n.body.trim() ? `<span class="nb">${preview(n.body, ts)}</span>` : ''}
+    <span class="nd">${esc(when(n.updated))}</span></button>`).join('');
+  $('list').innerHTML = h;
+}
+
+function openEd(n){
+  cur = n;
+  $('title').value = n.title; $('body').value = n.body;
+  $('saved').textContent = 'محفوظة';
+  $('ed').classList.add('open'); $('ed').setAttribute('aria-hidden', 'false');
+  if (location.hash !== '#note') { try { location.hash = 'note'; } catch(e){} }
+  setTimeout(() => (n.title || n.body ? $('body') : $('title')).focus(), 260);
+}
+function closeEd(){
+  if (!cur) return;
+  if (!cur.title.trim() && !cur.body.trim()) notes = notes.filter(x => x !== cur);
+  flush(); persist();
+  cur = null;
+  document.activeElement && document.activeElement.blur();
+  $('ed').classList.remove('open'); $('ed').setAttribute('aria-hidden', 'true');
+  render();
+}
+function goBack(){ if (location.hash === '#note') history.back(); else closeEd(); }
+
+function toast(msg, act){
+  clearTimeout(toastT);
+  $('toastMsg').textContent = msg;
+  $('toastBtn').hidden = !act; undo = act || null;
+  $('toast').classList.add('show');
+  toastT = setTimeout(() => { $('toast').classList.remove('show'); undo = null; }, 6000);
+}
+
+function edit(field){ return e => { if (!cur) return; cur[field] = e.target.value; cur.updated = Date.now(); saveSoon(); }; }
+$('title').addEventListener('input', edit('title'));
+$('body').addEventListener('input', edit('body'));
+$('title').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('body').focus(); } });
+
+$('addBtn').addEventListener('click', () => { const n = {id: uid(), title: '', body: '', created: Date.now(), updated: Date.now()}; notes.push(n); openEd(n); });
+$('list').addEventListener('click', e => { const b = e.target.closest('.note'); if (!b) return; const n = notes.find(x => x.id === b.dataset.id); if (n) openEd(n); });
+$('backBtn').addEventListener('click', goBack);
+window.addEventListener('hashchange', () => { if (location.hash !== '#note' && cur) closeEd(); });
+
+$('q').addEventListener('input', render);
+$('clearQ').addEventListener('click', () => { $('q').value = ''; render(); $('q').focus(); });
+
+const openS = id => $(id).classList.add('open');
+document.querySelectorAll('.scrim').forEach(s => s.addEventListener('click', e => { if (e.target === s || e.target.hasAttribute('data-close')) s.classList.remove('open'); }));
+
+$('delBtn').addEventListener('click', () => openS('confirmDel'));
+$('yesDel').addEventListener('click', () => {
+  $('confirmDel').classList.remove('open');
+  const gone = cur, idx = notes.indexOf(gone);
+  notes = notes.filter(x => x !== gone);
+  cur = null; persist();
+  $('ed').classList.remove('open'); $('ed').setAttribute('aria-hidden', 'true');
+  if (location.hash === '#note') history.back();
+  render();
+  if (gone && (gone.title.trim() || gone.body.trim())) toast('انحذفت الملاحظة', () => { notes.splice(Math.max(0, idx), 0, gone); persist(); render(); });
+});
+$('toastBtn').addEventListener('click', () => { if (undo) undo(); undo = null; $('toast').classList.remove('show'); });
+
+$('menuBtn').addEventListener('click', () => openS('menu'));
+$('exportBtn').addEventListener('click', async () => {
+  $('menu').classList.remove('open');
+  const d = new Date(), stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const name = 'ملاحظاتي-' + stamp + '.json';
+  const blob = new Blob([JSON.stringify({app: 'ملاحظاتي', v: 1, notes}, null, 1)], {type: 'application/json'});
+  try {
+    const f = new File([blob], name, {type: 'application/json'});
+    if (navigator.canShare && navigator.canShare({files: [f]})) { await navigator.share({files: [f], title: 'نسخة ملاحظاتي'}); toast('تم تجهيز النسخة'); return; }
+  } catch(e){ if (e && e.name === 'AbortError') return; }
+  try {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('تم حفظ النسخة الاحتياطية');
+  } catch(e){ toast('ما قدرنا نحفظ الملف هنا'); }
+});
+$('importBtn').addEventListener('click', () => { $('menu').classList.remove('open'); $('file').click(); });
+$('file').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    const inc = Array.isArray(data) ? data : data.notes;
+    if (!Array.isArray(inc)) throw 0;
+    let added = 0;
+    for (const n of inc){
+      if (!n || typeof n !== 'object') continue;
+      const clean = {id: String(n.id || uid()), title: String(n.title || ''), body: String(n.body || ''), created: +n.created || Date.now(), updated: +n.updated || Date.now()};
+      const ex = notes.find(x => x.id === clean.id);
+      if (!ex){ notes.push(clean); added++; }
+      else if (clean.updated > ex.updated){ Object.assign(ex, clean); added++; }
+    }
+    persist(); render();
+    toast(added ? 'تم استرجاع ' + num(added) + ' ملاحظة' : 'كل الملاحظات موجودة أصلاً');
+  } catch(err){ toast('الملف هذا مو نسخة ملاحظات'); }
+});
+
+document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); });
+window.addEventListener('pagehide', flush);
+
+load();
+if (location.hash === '#note') { try { history.replaceState(null, '', location.pathname + location.search); } catch(e){} }
+render();
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e){}
+try { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {}); } catch(e){}
+}
+</script>
+</body>
+</html>
